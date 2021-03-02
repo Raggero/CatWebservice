@@ -16,6 +16,9 @@ public class CatDto {
         this.weight = weight;
     }
 
+    public CatDto() {
+    }
+
     public int getId() {
         return id;
     }
