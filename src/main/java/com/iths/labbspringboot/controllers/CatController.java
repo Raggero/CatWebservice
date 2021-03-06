@@ -6,13 +6,12 @@ import com.iths.labbspringboot.services.CatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 @RestController
 public class CatController {
 
-    private CatService catService;
+    private final CatService catService;
 
     public CatController(CatService catService) {
         this.catService = catService;
@@ -26,7 +25,7 @@ public class CatController {
     @GetMapping("/cats/{id}")
     public CatDto getOneById(@PathVariable int id){
         return catService.getOneById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cat not found"));
     }
 
     @GetMapping(value = "/cats/search", params = "gender")

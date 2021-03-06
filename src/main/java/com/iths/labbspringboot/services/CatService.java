@@ -8,7 +8,6 @@ import com.iths.labbspringboot.repositories.CatRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -16,7 +15,7 @@ import java.util.Optional;
 public class CatService  {
 
     private final CatMapper catMapper;
-    private CatRepository catRepository;
+    private final CatRepository catRepository;
 
     public CatService(CatRepository catRepository, CatMapper catMapper) {
         this.catRepository = catRepository;
@@ -33,8 +32,11 @@ public class CatService  {
     }
 
     public CatDto createCat(CatDto catDto){
-        //Validate here
-        return catMapper.mapp(catRepository.save(catMapper.mapp(catDto)));
+        if(checkNotEmpty(catDto)){
+            return catMapper.mapp(catRepository.save(catMapper.mapp(catDto)));
+        }else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid input. All attributes of the cat must be sent");
+        }
     }
 
     public boolean deleteCat(int id) {
@@ -46,10 +48,8 @@ public class CatService  {
     }
 
     public CatDto replaceCat(int id, CatDto catDto) {
-        //validera så att man inte försöker skicka in nullparametrar
         Optional<Cat> cat = catRepository.findById(id);
-        if(checkNotEmpty(catDto)) {
-            if (cat.isPresent()) {
+        if (cat.isPresent() && checkNotEmpty(catDto)) {
                 Cat updatedCat = cat.get();
                 updatedCat.setName(catDto.getName());
                 updatedCat.setType(catDto.getType());
@@ -57,16 +57,12 @@ public class CatService  {
                 updatedCat.setWeight(catDto.getWeight());
                 return catMapper.mapp(catRepository.save(updatedCat));
             } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found");
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cat not found or invalid input.");
             }
-        }
-        else{
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not process request");
-        }
     }
 
     private boolean checkNotEmpty(CatDto catDto) {
-        if(catDto.getName().isEmpty() || catDto.getGender().isEmpty() || catDto.getType().isEmpty() || (catDto.getWeight() < 0.0))
+        if(catDto.getName() == null || catDto.getGender() == null || catDto.getType() == null || (catDto.getWeight() < 0.01))
             return false;
         return true;
     }
@@ -79,7 +75,7 @@ public class CatService  {
                 updatedCat.setWeight(catWeight.weight);
             return catMapper.mapp(catRepository.save(updatedCat));
         } else{
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cat not found");
         }
     }
 
